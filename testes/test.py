@@ -26,7 +26,13 @@ class Operador:
             bloco = octetos[i:i+8]
             lista_de_blocos.append(bloco)
         
-        print(lista_de_blocos)
+        # COLOCA NUMA STRING
+        mask = ""
+        for i in range(4):
+            mask += lista_de_blocos[i]
+            mask += "."
+        
+        print(mask[:-1])
 
 octetos_endereco = ['255','255','254','0']
 address_in_bnry = []
@@ -34,4 +40,11 @@ for e in octetos_endereco:
     n = int(e)
     address_in_bnry.append(f"{n:08b}")
 
-print(address_in_bnry)
+"""
+11111111.11111111.11110000.00000000
+11111111.11111111.11111111.11111111
+
+00000000.00000000.00001111.11111111
+"""
+
+Operador.num_to_octetos(19)

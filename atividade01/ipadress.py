@@ -1,73 +1,100 @@
-"""
-DEFINIR O ALCANCE DA REDE
-  1 - Converter os octetos para binário
-  2 - Fazer a contagem de números 1
-"""
+class IPAddress:
+    rede = str
+    broadcast = str
+    prefixo = str
 
-class IPAdress:
-    __rede = str
-    __broadcast = str
-    __prefixo = str
-
-    def __init__(self, endereco, mascara):
+    def __init__(self, endereco: str, mascara: str):
         self.setEndereco(endereco)
         self.setMascara(mascara)
     
     def __str__(self):
-        data = ""
-        data += f"{self.__endereco}/{self.__prefixo}"
+        data = f"{self.endereco}/{self.prefixo}"
         return data
     
     def setEndereco(self, endereco):
-        self.__endereco = endereco
+        self.endereco = endereco
     
     def setMascara(self, mascara):
-        self.__mascara = mascara
+        self.mascara = mascara
 
-        # CALCULA O PREFIXO DA REDE
+        # -------- CALCULA O PREFIXO DA REDE --------
+
+        # 1 - Converte os octetos para binário 
         mask_in_binry = ""
         octetos = mascara.split(".")
         for o in octetos:
             n = int(o)
             mask_in_binry += f"{n:b}"
-        
+            
+        # 2 - Faz a contagem dos números 1
         prefixo = 0
         for i in mask_in_binry:
             if (i == "1"):
                 prefixo += 1
 
-        self.__prefixo = prefixo
+        self.prefixo = prefixo
 
-    def getEndereco(self):
-        return self.__endereco
+        self.calcula_broadcast()
+        self.calcula_rede()
 
-    def getMascara(self):
-        return self.__mascara
-
-    def rede(self):
+    def calcula_rede(self):
         # CONVERTE ENDEREÇO EM LISTA
-        octetos_endereco = self.__endereco.split(".")
-        lista_octetos_addr = list(map(int, octetos_endereco))
+        lista_octetos_addr = list(map(int, self.endereco.split(".")))
         
         # CONVERTE MÁSCARA EM LISTA
-        octetos_mascara = self.__mascara.split(".")
-        lista_octetos_mask = list(map(int, octetos_mascara))
+        lista_octetos_mask = list(map(int, self.mascara.split(".")))
 
         # CALCULA A REDE
-        rede = []
+        rede = ""
         for i in range(4):
-            calculo = lista_octetos_addr[i] & lista_octetos_mask[i]
-            rede.append(calculo)
+            n = lista_octetos_addr[i] & lista_octetos_mask[i]
+            rede += str(n)
+            rede += "."
         
-        rede = f"{rede[0]}.{rede[1]}.{rede[2]}.{rede[3]}"
-        return rede
+        self.rede = rede[:-1]
 
     def calcula_broadcast(self):
-        pass
+        lista_octetos_mask = list(map(int, self.mascara.split(".")))
+        lista_octetos_addr = list(map(int, self.endereco.split(".")))
 
-    def pertence_a_rede(self, rede):
-        pass
+        # INVERTE A MÁSCARA
+        mask_invertida = []
+        for oct_mask in lista_octetos_mask:
+            n = oct_mask ^ 255 # XOR
+            mask_invertida.append(n)
 
-ip = IPAdress("10.0.15.25", "255.255.254.0")
-print(ip)
-print(ip.rede())
+        broad = ""
+        for i in range(4):
+            n = lista_octetos_addr[i] | mask_invertida[i] # OR
+            broad += str(n)
+            broad += '.'
+        
+        self.broadcast = broad[:-1]
+
+    def broadcast(self):
+        return self.broadcast
+    
+    def rede(self):
+        return self.rede
+
+    def pertence_a_rede(self, rede_alvo):
+        lista_mask = list(map(int, self.mascara.split(".")))
+        lista_rede_alvo = list(map(int, rede_alvo.split(".")))
+
+        rede = ""
+        for i in range(4):
+            n = str(lista_mask[i] & lista_rede_alvo[i])
+            rede += n
+            rede += '.'
+        rede = rede[:-1] # REMOVE O ÚLTIMO PONTO DA STRING
+
+        return self.rede == rede
+            
+
+
+ip = IPAddress("192.168.1.10", "255.255.255.0")
+print(ip)                        # Saída esperada: "192.168.1.10/24"
+print(ip.rede)                  # "192.168.1.0"
+print(ip.broadcast)             # "192.168.1.255"
+print(ip.pertence_a_rede("192.168.1.55"))  # True
+print(ip.pertence_a_rede("192.168.2.1"))   # False
