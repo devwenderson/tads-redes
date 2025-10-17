@@ -92,9 +92,9 @@ class IPAddress:
             
 
 
-ip = IPAddress("192.168.1.10", "255.255.255.0")
-print(ip)                        # Saída esperada: "192.168.1.10/24"
-print(ip.rede)                  # "192.168.1.0"
-print(ip.broadcast)             # "192.168.1.255"
-print(ip.pertence_a_rede("192.168.1.55"))  # True
-print(ip.pertence_a_rede("192.168.2.1"))   # False
+ip = IPAddress("176.16.40.30", "255.255.192.0")
+print(ip)                                       
+print(ip.rede)                                  
+print(ip.broadcast)                             
+print(ip.pertence_a_rede("176.16.40.200"))       
+print(ip.pertence_a_rede("176.16.192.0"))        
