@@ -21,16 +21,13 @@ class IPAddress:
 
         # 1 - Converte os octetos para binário 
         mask_in_binry = ""
-        octetos = mascara.split(".")
-        for o in octetos:
-            n = int(o)
-            mask_in_binry += f"{n:b}"
+        for oct in mascara.split("."):
+            mask_in_binry += format(int(oct), "08b")
             
         # 2 - Faz a contagem dos números 1
         prefixo = 0
         for i in mask_in_binry:
-            if (i == "1"):
-                prefixo += 1
+            prefixo = prefixo + 1 if i == '1' else prefixo + 0
 
         self.prefixo = prefixo
 
@@ -47,9 +44,7 @@ class IPAddress:
         # CALCULA A REDE
         rede = ""
         for i in range(4):
-            n = lista_octetos_addr[i] & lista_octetos_mask[i]
-            rede += str(n)
-            rede += "."
+            rede += str(lista_octetos_addr[i] & lista_octetos_mask[i]) + "."
         
         self.rede = rede[:-1]
 
@@ -60,14 +55,11 @@ class IPAddress:
         # INVERTE A MÁSCARA
         mask_invertida = []
         for oct_mask in lista_octetos_mask:
-            n = oct_mask ^ 255 # XOR
-            mask_invertida.append(n)
+            mask_invertida.append(oct_mask ^ 255)
 
         broad = ""
         for i in range(4):
-            n = lista_octetos_addr[i] | mask_invertida[i] # OR
-            broad += str(n)
-            broad += '.'
+            broad += str(lista_octetos_addr[i] | mask_invertida[i]) + "."
         
         self.broadcast = broad[:-1]
 
@@ -83,12 +75,9 @@ class IPAddress:
 
         rede = ""
         for i in range(4):
-            n = str(lista_mask[i] & lista_rede_alvo[i])
-            rede += n
-            rede += '.'
-        rede = rede[:-1] # REMOVE O ÚLTIMO PONTO DA STRING
+            rede += str(lista_mask[i] & lista_rede_alvo[i]) + "."
 
-        return self.rede == rede
+        return self.rede == rede[:-1]
             
 
 
