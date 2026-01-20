@@ -7,8 +7,8 @@ BROADCAST_DELAY = 5
 class Cliente:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        # self.tcp_port = random.randint(20000, 40000)
-        self.tcp_port = 22222
+        self.tcp_port = random.randint(20000, 40000)
+        # self.tcp_port = 22222
         self.running = True
         self.mac = self.get_local_mac()
 
@@ -62,7 +62,15 @@ class Cliente:
                 elif (psutil.LINUX): os_name = "Linux"
                 elif (psutil.MACOS): os_name = "Mac OS"
 
-                response = f"RESOURCES;Sistema Operacional: {os_name}\nN° de núcleos: {qtd_core}\nUso da CPU: {cpu_usage}%\nRAM livre: {free_ram}GB\nDisco livre: {free_disk}GB"
+                response = (
+                    "RESOURCES;"
+                    f"os_name={os_name};"
+                    f"qty_core={qtd_core};"
+                    f"cpu_usage={cpu_usage};"
+                    f"free_ram={free_ram};"
+                    f"free_disk={free_disk}"
+                )
+
 
                 conn.send(response.encode())
 
@@ -103,20 +111,3 @@ class Cliente:
 if __name__ == "__main__":
     cliente = Cliente()
     cliente.start()
-
-# HOST = "10.220.0.42"
-# PORT = 12000
-# cliente = Cliente()
-
-# while True:
-#     print("Digite (Sair) para sair")
-#     mensagem_envio = input("Digite uma mensagem: ")
-
-#     if mensagem_envio == "sair":
-#         break
-
-#     cliente.send_to_server(mensagem_envio, (HOST, PORT))
-#     resposta, endereco = cliente.recover_from_server()
-#     print(f"Resposta: {resposta.decode()} - Endereço: {endereco}")
-
-# print("Saiu")
