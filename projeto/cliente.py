@@ -1,4 +1,4 @@
-import socket, threading, random, time, uuid
+import socket, threading, random, time, uuid, psutil
 
 BROADCAST_PORT = 50000
 BROADCAST_ADDR = "<broadcast>"
@@ -30,7 +30,7 @@ class Cliente:
             time.sleep(BROADCAST_DELAY)
 
     # ----------------------------------------------------
-    # TCP: servidor interno para responder comandos
+    # TCP: servidor interno para responder comandos do servidor
     # ----------------------------------------------------
     def tcp_server_receive_command(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -49,6 +49,22 @@ class Cliente:
                 response = f"MAC_ADDRESS;{self.mac}"
                 conn.send(response.encode())
                 print(f"[MAC enviado via TCP] {self.mac}")
+
+            if data == "GET_RESOURCES":
+                # USO DA CPU EM PORCENTAGEM
+                cpu_usage = psutil.cpu_percent(interval=2)
+                free_ram = (psutil.virtual_memory().available)//(1024)**3
+                free_disk = (psutil.disk_usage("C:\\").free)//(1024)**3
+                os_name = ""
+
+                if (psutil.WINDOWS): os_name = "Windows"
+                elif (psutil.LINUX): os_name = "Linux"
+                elif (psutil.MACOS): os_name = "Mac OS"
+
+                response = f"RESOURCES;Sistema Operacional: {os_name} - Uso da CPU: {cpu_usage}% - RAM livre: {free_ram}GB - Disco livre: {free_disk}GB"
+
+                conn.send(response.encode())
+
             
             conn.close() # FIN
 

@@ -1,4 +1,4 @@
-import socket, threading, time
+import socket, threading, time, psutil
 
 BROADCAST_PORT = 50000
 
@@ -20,7 +20,7 @@ class ClienteInfo:
                 f"Ultima mensagem='{self.last_msg}' | {age}s atrás")
 
 
-class DiscoveryServer:
+class Servidor:
     def __init__(self):
         self.clientes = {} # chave: (ip, tcp_port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -54,36 +54,68 @@ class DiscoveryServer:
             # Envia resposta UDP
             self.sock.sendto("DISCOVER_RESPONSE".encode(), addr)
 
+    def send_request_to_client(self, command, key):
+        """
+        key: (ip_address, tcp_port)
+        """
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(key) # SYN
+
+        sock.send(command.encode())
+        response = sock.recv(1024).decode()
+        sock.close()
+        return response
+
+
     # -----------------------------------------------
     # SOLICITA MAC VIA TCP
     # -----------------------------------------------
     def ask_me_tcp(self, key):
         """
-        key = (ip, tcp_port)
+        key: (ip_address, tcp_port)
         """
 
         if key not in self.clientes:
             print("[Erro] Cliente não encontrado")
             return
         
-        ip, tcp_port = key
-        print(f"[Servidor] Tentando conexão com o cliente {ip}:{tcp_port} via TCP ")
+        ip_address, tcp_port = key
+        print(f"[Servidor] Tentando conexão com o cliente {ip_address}:{tcp_port} via TCP ")
 
         try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect((ip, tcp_port)) # SYN
-
-            sock.send("GET_MAC".encode())
-            response = sock.recv(1024).decode()
-            sock.close()
+            response = self.send_request_to_client("GET_MAC", (ip_address, tcp_port))
 
             if response.startswith("MAC_ADDRESS"):
                 mac = response.split(";")[1]
                 self.clientes[key].mac = mac
-                print(f"[MAC recebido via TCP] {ip}:{tcp_port} => {mac}")
+                print(f"[MAC recebido via TCP] {ip_address}:{tcp_port} => {mac}")
 
         except Exception as e:
             print(f"[Erro] Erro de conexão via TCP: {e}")
+    
+    # ---------------------------------------------------------
+    # SOLICITA DADOS DE RECURSOS DO COMPUTADOR CLIENTE VIA TCP
+    # ---------------------------------------------------------
+    def ask_me_resources(self, key):
+        """
+        key: (ip_address, tcp_port)
+        """
+        
+        if key not in self.clientes:
+            print("[Erro] Cliente não encontrado")
+            return
+
+        ip_address, tcp_port = key
+        print(f"[Servidor] Tentando conexão com o cliente {ip_address}:{tcp_port} via TCP")
+
+        try:
+            response = self.send_request_to_client("GET_RESOURCES", (ip_address, tcp_port))
+            if (response.startswith("RESOURCES")):
+                resources = response.split(";")[1]
+                return resources
+        
+        except Exception as e:
+            print(f"[Erro] Erro de conexão TCP: {e}")
 
     def menu(self):
         while True:
@@ -91,6 +123,7 @@ class DiscoveryServer:
             opcoes = "1 - Listar clientes\n"
             opcoes += "2 - Solicitar MAC de um cliente via TCP\n" 
             opcoes += "3 - Solicitar MAC de todos os clientes via TCP\n" 
+            opcoes += "4 - Solicitar dados dos recursos de um cliente via TCP\n" 
             opcoes += "0 - Sair\n"
             print(opcoes)
             op = input("> ")
@@ -99,17 +132,23 @@ class DiscoveryServer:
                 case "1":
                     print("\n--- Clientes ---")
 
-                    for ip, tcp_port in self.clientes:
-                        print(f"{ip}:{tcp_port} -> {self.clientes[(ip, tcp_port)]}")
+                    for ip_address, tcp_port in self.clientes:
+                        print(f"{ip_address}:{tcp_port} -> {self.clientes[(ip_address, tcp_port)]}")
 
                 case "2":
-                    ip = input("Digite o IP: ")
+                    ip_address = input("Digite o IP: ")
                     tcp_port = int(input("Digite a porta TCP do cliente: "))
-                    self.ask_me_tcp((ip, tcp_port))
+                    self.ask_me_tcp((ip_address, tcp_port))
 
                 case "3":
                     for key in self.clientes:
                         self.ask_me_tcp(key)
+
+                case "4":
+                    ip_address = input("Digite o IP: ")
+                    tcp_port = int(input("Digite a porta TCP do cliente: "))
+                    resources = self.ask_me_resources((ip_address, tcp_port))
+                    print(f"Recursos do cliente {ip_address}:{tcp_port} -> {resources}")
 
                 case "0":
                     exit()
@@ -121,31 +160,33 @@ class DiscoveryServer:
         threading.Thread(target=self.listen_broadcast, daemon=True).start()
         self.menu()
                 
-class Servidor:
-    def __init__(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    def bind_server(self, host, port):
-        self.sock.bind((host, port))
-
-    def send_to_client(self, mensagem, endereco):
-        """
-            Entradas:
-                mensagem: string
-                endereco: (str, int) - ("123.93.29.12", 123456)
-        """
-        mensagem_bytes = mensagem.encode()
-        self.sock.sendto(mensagem_bytes, endereco)
-
-    def recover_from_client(self):
-        """
-            Saída: (bytes, address)
-        """
-        mensagem_recebida = self.sock.recvfrom(2048)
-        return mensagem_recebida
-
 if __name__ == "__main__":
-    DiscoveryServer().start()
+    Servidor().start()
+
+
+# class Servidor:
+#     def __init__(self):
+#         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+#     def bind_server(self, host, port):
+#         self.sock.bind((host, port))
+
+#     def send_to_client(self, mensagem, endereco):
+#         """
+#             Entradas:
+#                 mensagem: string
+#                 endereco: (str, int) - ("123.93.29.12", 123456)
+#         """
+#         mensagem_bytes = mensagem.encode()
+#         self.sock.sendto(mensagem_bytes, endereco)
+
+#     def recover_from_client(self):
+#         """
+#             Saída: (bytes, address)
+#         """
+#         mensagem_recebida = self.sock.recvfrom(2048)
+#         return mensagem_recebida
+
 
 
 # HOST = ""
