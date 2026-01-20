@@ -7,7 +7,8 @@ BROADCAST_DELAY = 5
 class Cliente:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.tcp_port = random.randint(20000, 40000)
+        # self.tcp_port = random.randint(20000, 40000)
+        self.tcp_port = 22222
         self.running = True
         self.mac = self.get_local_mac()
 
@@ -52,16 +53,16 @@ class Cliente:
 
             if data == "GET_RESOURCES":
                 # USO DA CPU EM PORCENTAGEM
+                qtd_core = psutil.cpu_count(logical=False)
                 cpu_usage = psutil.cpu_percent(interval=2)
                 free_ram = (psutil.virtual_memory().available)//(1024)**3
                 free_disk = (psutil.disk_usage("C:\\").free)//(1024)**3
                 os_name = ""
-
                 if (psutil.WINDOWS): os_name = "Windows"
                 elif (psutil.LINUX): os_name = "Linux"
                 elif (psutil.MACOS): os_name = "Mac OS"
 
-                response = f"RESOURCES;Sistema Operacional: {os_name} - Uso da CPU: {cpu_usage}% - RAM livre: {free_ram}GB - Disco livre: {free_disk}GB"
+                response = f"RESOURCES;Sistema Operacional: {os_name}\nN° de núcleos: {qtd_core}\nUso da CPU: {cpu_usage}%\nRAM livre: {free_ram}GB\nDisco livre: {free_disk}GB"
 
                 conn.send(response.encode())
 

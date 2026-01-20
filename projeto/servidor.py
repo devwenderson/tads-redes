@@ -1,3 +1,4 @@
+import os
 import socket, threading, time, psutil
 
 BROADCAST_PORT = 50000
@@ -48,7 +49,7 @@ class Servidor:
                     self.clientes[key] = ClienteInfo(ip, tcp_port)
                     print(f"[Novo cliente] {ip}:{tcp_port}")
             
-            # Atualiza keepalive
+            # Atualiza "last_msg" e "last_seen"
             self.clientes[key].update(mensagem)
 
             # Envia resposta UDP
@@ -80,7 +81,7 @@ class Servidor:
             return
         
         ip_address, tcp_port = key
-        print(f"[Servidor] Tentando conexão com o cliente {ip_address}:{tcp_port} via TCP ")
+        print(f"[Servidor] Tentando conexão com o cliente {ip_address}:{tcp_port} via TCP\n")
 
         try:
             response = self.send_request_to_client("GET_MAC", (ip_address, tcp_port))
@@ -88,10 +89,10 @@ class Servidor:
             if response.startswith("MAC_ADDRESS"):
                 mac = response.split(";")[1]
                 self.clientes[key].mac = mac
-                print(f"[MAC recebido via TCP] {ip_address}:{tcp_port} => {mac}")
+                print(f"[MAC recebido via TCP] {ip_address}:{tcp_port} => {mac}\n")
 
         except Exception as e:
-            print(f"[Erro] Erro de conexão via TCP: {e}")
+            print(f"[Erro] Erro de conexão via TCP: {e}\n")
     
     # ---------------------------------------------------------
     # SOLICITA DADOS DE RECURSOS DO COMPUTADOR CLIENTE VIA TCP
@@ -102,11 +103,11 @@ class Servidor:
         """
         
         if key not in self.clientes:
-            print("[Erro] Cliente não encontrado")
+            print("[Erro] Cliente não encontrado\n")
             return
 
         ip_address, tcp_port = key
-        print(f"[Servidor] Tentando conexão com o cliente {ip_address}:{tcp_port} via TCP")
+        print(f"[Servidor] Tentando conexão com o cliente {ip_address}:{tcp_port} via TCP\n")
 
         try:
             response = self.send_request_to_client("GET_RESOURCES", (ip_address, tcp_port))
@@ -115,8 +116,12 @@ class Servidor:
                 return resources
         
         except Exception as e:
-            print(f"[Erro] Erro de conexão TCP: {e}")
+            print(f"[Erro] Erro de conexão TCP: {e}\n")
 
+    def list_clients(self):
+        for ip_address, tcp_port in self.clientes:
+            print(f"{ip_address}:{tcp_port} -> {self.clientes[(ip_address, tcp_port)]}")
+    
     def menu(self):
         while True:
             print("\n=== MENU SERVIDOR ===")
@@ -130,12 +135,14 @@ class Servidor:
 
             match op:
                 case "1":
+                    os.system("cls")
                     print("\n--- Clientes ---")
 
-                    for ip_address, tcp_port in self.clientes:
-                        print(f"{ip_address}:{tcp_port} -> {self.clientes[(ip_address, tcp_port)]}")
+                    self.list_clients()
 
                 case "2":
+                    os.system("cls")
+                    self.list_clients()
                     ip_address = input("Digite o IP: ")
                     tcp_port = int(input("Digite a porta TCP do cliente: "))
                     self.ask_me_tcp((ip_address, tcp_port))
@@ -145,10 +152,12 @@ class Servidor:
                         self.ask_me_tcp(key)
 
                 case "4":
+                    os.system("cls")
+                    self.list_clients()
                     ip_address = input("Digite o IP: ")
                     tcp_port = int(input("Digite a porta TCP do cliente: "))
                     resources = self.ask_me_resources((ip_address, tcp_port))
-                    print(f"Recursos do cliente {ip_address}:{tcp_port} -> {resources}")
+                    print(f"Recursos do cliente {ip_address}:{tcp_port} ->\n{resources}")
 
                 case "0":
                     exit()
