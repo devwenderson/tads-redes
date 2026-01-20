@@ -47,9 +47,9 @@ comandos administrativos ou integração com ferramenta padrão de controle remo
 
 #### 2.2 Servidor / Consolidação (2,0 pontos)
 
-- [ ] Dashboard em terminal ou interface gráfica simples com lista de clientes, última atualização, sistema operacional e IP principal (0,5)
+- [x] Dashboard em terminal ou interface gráfica simples com lista de clientes, última atualização, sistema operacional e IP principal (0,5)
 
-- [ ] Consolidação dos dados com cálculo de média simples e contagem de clientes online e offline. Cliente offline é aquele que não responde ao mecanismo de hello por mais de 30 segundos (0,5)
+- [x] Consolidação dos dados com cálculo de média simples e contagem de clientes online e offline. Cliente offline é aquele que não responde ao mecanismo de hello por mais de 30 segundos (0,5)
 
 - [x] Funcionalidade de detalhamento de um cliente selecionado (0,5)
 
