@@ -1,14 +1,13 @@
 import socket, threading, random, time, uuid, psutil
 
 BROADCAST_PORT = 50000
-BROADCAST_ADDR = "<broadcast>"
+BROADCAST_ADDR = "255.255.255.255"
 BROADCAST_DELAY = 5
 
 class Cliente:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.tcp_port = random.randint(20000, 40000)
-        # self.tcp_port = 22222
         self.running = True
         self.mac = self.get_local_mac()
 
@@ -25,7 +24,7 @@ class Cliente:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
         while self.running:
-            mensagem = f"DISCOVER_REQUEST;PORT={self.tcp_port}"
+            mensagem = f"DISCOVER_REQUEST;port={self.tcp_port};verificador={uuid.uuid4()}"
             sock.sendto(mensagem.encode(), (BROADCAST_ADDR, BROADCAST_PORT))
             print(f"[Broadcast enviado] {mensagem}")
             time.sleep(BROADCAST_DELAY)
@@ -52,7 +51,6 @@ class Cliente:
                 print(f"[MAC enviado via TCP] {self.mac}")
 
             if data == "GET_RESOURCES":
-                # USO DA CPU EM PORCENTAGEM
                 qtd_core = psutil.cpu_count(logical=False)
                 cpu_usage = psutil.cpu_percent(interval=2)
                 free_ram = (psutil.virtual_memory().available)//(1024)**3
@@ -70,11 +68,7 @@ class Cliente:
                     f"free_ram={free_ram};"
                     f"free_disk={free_disk}"
                 )
-
-
                 conn.send(response.encode())
-
-            
             conn.close() # FIN
 
     # ----------------------------------------------------

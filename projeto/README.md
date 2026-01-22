@@ -13,19 +13,12 @@ Esse projeto está em desenvolvimento com a linguagem python. o objetivo dessa a
 - time
 - random
 - psutil
+- datetime
+- os
+- json
 
 ## O que fazer
-Perfeito — correção justa 👍
-Você está certo: **caixas de marcação em Markdown só funcionam corretamente como `- [ ]`**.
-
-Abaixo está **o mesmo texto**, **sem alterações de conteúdo**, apenas com:
-
-* Sintaxe correta de **checkbox em Markdown (`- [ ]`)**
-* Estrutura original preservada
-
----
-
-## 1. OBJETIVO
+### 1. OBJETIVO
 
 Construir um sistema cliente/servidor para inventário e monitoramento de computadores em rede, com
 descoberta automática, coleta de métricas, consolidação de dados e ação remota segura, por meio de
@@ -53,7 +46,7 @@ comandos administrativos ou integração com ferramenta padrão de controle remo
 
 - [x] Funcionalidade de detalhamento de um cliente selecionado (0,5)
 
-- [ ] Exportação de relatórios do consolidado geral e de um cliente específico nos formatos CSV ou JSON (0,5)
+- [x] Exportação de relatórios do consolidado geral e de um cliente específico nos formatos CSV ou JSON (0,5)
 
 ---
 
@@ -84,7 +77,6 @@ comandos administrativos ou integração com ferramenta padrão de controle remo
 - [ ] Controle remoto do mouse do cliente (1,0)
 
 - [ ] Controle remoto do teclado do cliente (1,0)
-
 
 ## Referências
 - [Sockets - python](https://docs.python.org/3/library/socket.html)
